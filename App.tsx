@@ -40,10 +40,12 @@ export default function App() {
       // Map existing messages to history format
       // Note: we're ignoring the first welcome message to not pollute prompt, or we can send it.
       // But server uses systemInstruction which sets the role. So we'll skip first welcome if we want, or just send it.
-      const history = messages.map(msg => ({
-        role: msg.role === 'model' ? 'model' : 'user',
-        parts: [{ text: msg.content }] // For @google/genai, chat history part format
-      }));
+      const history = messages
+        .filter((msg, index) => !(index === 0 && msg.role === 'model'))
+        .map(msg => ({
+          role: msg.role === 'model' ? 'model' : 'user',
+          parts: [{ text: msg.content }] 
+        }));
 
       const res = await fetch('/api/chat', {
         method: 'POST',

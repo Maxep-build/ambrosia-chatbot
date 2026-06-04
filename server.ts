@@ -1,7 +1,8 @@
 import express from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
-import { GoogleGenAI, GenerateContentResponse } from '@google/genai';
+import { GoogleGenAI, GenerateContentResponse, Tool, Type } from '@google/genai';
+import twilio from 'twilio';
 
 const systemInstruction = `You are an AI customer support assistant for Ambrosia Cafe & Bakery, a cafe and bakery located at 14/3 Mall Road, Civil Lines, Kanpur, Uttar Pradesh.
 
@@ -97,9 +98,9 @@ YOUR BEHAVIOR RULES:
    Step 1 - Ask what items they want and quantity
    Step 2 - Ask delivery or pickup
    Step 3 - If delivery, ask their address
-   Step 4 - Ask preferred time
+   Step 4 - Ask their phone number and name
    Step 5 - Confirm full order summary with total price
-   Step 6 - Say: "Your order has been noted. The owner will confirm shortly on this number."
+   Step 6 - Trigger the 'notifyOwnerOfOrder' function silently to notify the owner. Say: "Your order has been noted. The owner will confirm shortly on this number."
 
 3. ESCALATE to human (say "Let me connect you with our team for this") when:
    - Customer has a complaint
@@ -151,27 +152,93 @@ async function startServer() {
     return ai;
   };
 
+  let twilioClient: twilio.Twilio | null = null;
+  const getTwilio = () => {
+    if (!twilioClient) {
+      if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+        twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+      } else {
+        console.warn("Twilio credentials not fully set, SMS notifications disabled.");
+      }
+    }
+    return twilioClient;
+  };
+
+  const tools: Tool[] = [{
+    functionDeclarations: [
+      {
+        name: 'notifyOwnerOfOrder',
+        description: 'Call this function ONLY when the customer has fully confirmed the order and all details have been collected.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            customerName: { type: Type.STRING },
+            customerPhone: { type: Type.STRING, description: 'Customer phone number' },
+            totalPrice: { type: Type.NUMBER },
+            itemsOrdered: { type: Type.STRING, description: 'List of items and quantities' },
+            deliveryOrPickup: { type: Type.STRING },
+            address: { type: Type.STRING }
+          },
+          required: ['customerName', 'customerPhone', 'totalPrice', 'itemsOrdered', 'deliveryOrPickup']
+        }
+      }
+    ]
+  }];
+
   app.post('/api/chat', async (req, res) => {
     try {
       const aiClient = getAI();
       const { history, message } = req.body;
       
       const chat = aiClient.chats.create({
-        model: 'gemini-3.5-flash',
+        model: 'gemini-3.1-flash-lite',
         config: {
           systemInstruction,
-          temperature: 0.2, // Slightly lower temperature for deterministic support behavior
+          temperature: 0.2,
+          tools,
         },
-        // We pass the previous history here. @google/genai format has structure { role: 'user' | 'model', parts: [{ text: ... }] }
-        // For now, if we don't have chat history mapping out of the box in chats.create, 
-        // @google/genai requires passing `history` array directly in `ai.chats.create({ history: ... })` if supported, 
-        // OR we just use generateContent with concatenated user/model messages. 
-        // Wait, @google/genai supports passing `history` array to chats.create!
         history: history || [],
       });
       
       const chatResp: GenerateContentResponse = await chat.sendMessage({ message });
-      res.json({ text: chatResp.text });
+      
+      let responseText = chatResp.text || "";
+
+      // Check if function calls were made
+      if (chatResp.functionCalls && chatResp.functionCalls.length > 0) {
+        for (const call of chatResp.functionCalls) {
+          if (call.name === 'notifyOwnerOfOrder') {
+            const args = call.args as any;
+            const tc = getTwilio();
+            let rawFromNum = (process.env.TWILIO_WHATSAPP_FROM || 'whatsapp:+14155238886').replace(/['"]/g, '');
+            const fromNum = rawFromNum.startsWith('whatsapp:') ? rawFromNum : `whatsapp:${rawFromNum}`;
+            const toNum = 'whatsapp:+918840224266';
+            
+            if (tc) {
+              try {
+                const msgBody = `🔔 New Order!\n\n*Customer*: ${args.customerName}\n*Phone*: ${args.customerPhone}\n*Items*: ${args.itemsOrdered}\n*Total*: ₹${args.totalPrice}\n*Type*: ${args.deliveryOrPickup}\n*Address*: ${args.address || 'N/A'}`;
+                await tc.messages.create({
+                  body: msgBody,
+                  from: fromNum,
+                  to: toNum
+                });
+                console.log('WhatsApp notification sent');
+              } catch (err) {
+                console.error('Twilio notification error:', err);
+              }
+            } else {
+               console.log("Mock WhatsApp alert:", args);
+            }
+          }
+        }
+        
+        // If the model didn't return text alongside the function call, supply the default confirmation
+        if (!responseText || responseText.trim() === '') {
+          responseText = "Your order has been noted. The owner will confirm shortly on this number.";
+        }
+      }
+
+      res.json({ text: responseText });
       
     } catch (error: any) {
       console.error('Chat error:', error);
