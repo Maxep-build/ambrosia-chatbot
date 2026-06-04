@@ -83,7 +83,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen bg-[#FCFAF7] overflow-hidden font-sans text-[#1F1F1F]">
+    <div className="flex h-[100dvh] bg-[#FCFAF7] overflow-hidden font-sans text-[#1F1F1F]">
       {/* Sidebar - Desktop */}
       <aside className="hidden md:flex flex-col w-[380px] border-r border-black/10 p-8">
         <div className="mb-12">
