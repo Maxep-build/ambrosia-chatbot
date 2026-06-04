@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, GenerateContentResponse, Tool, Type } from '@google/genai';
 import twilio from 'twilio';
@@ -246,15 +247,21 @@ async function startServer() {
     }
   });
 
-  if (process.env.NODE_ENV !== 'production') {
+  const isProd = process.env.NODE_ENV === 'production' || process.argv.some(arg => arg.endsWith('server.cjs'));
+
+  if (!isProd) {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
     });
     app.use(vite.middlewares);
   } else {
-    // Note: express v5 uses '*all' but the project has express v4.21.2, so '*' is used.
-    const distPath = path.join(process.cwd(), 'dist');
+    // Robustly find dist
+    let distPath = path.join(process.cwd(), 'dist');
+    if (!fs.existsSync(distPath) && fs.existsSync(path.join(process.cwd(), 'index.html'))) {
+      distPath = process.cwd();
+    }
+    
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
