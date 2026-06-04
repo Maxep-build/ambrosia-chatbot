@@ -1,16 +1,624 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <title>Ambrosia Cafe & Bakery</title>
+    <style>
+      :root {
+        --bg-color: #FCFAF7;
+        --text-color: #1F1F1F;
+        --accent: #4A5D4E;
+        --gold: #D4A373;
+        --border-color: rgba(0,0,0,0.05);
+      }
+      
+      * { box-sizing: border-box; }
+      
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', sans-serif;
+        color: var(--text-color);
+        background-color: var(--bg-color);
+        height: 100dvh;
+        overflow: hidden;
+        display: flex;
+      }
+      
+      h1, h2, h3, h4, h5, h6, .serif {
+        font-family: 'Playfair Display', serif;
+        margin: 0;
+      }
+      
+      p { margin: 0; }
+      
+      /* Sidebar */
+      .sidebar {
+        width: 380px;
+        border-right: 1px solid rgba(0,0,0,0.1);
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+      }
+      
+      @media (max-width: 768px) {
+        .sidebar { display: none; }
+      }
+      
+      .brand-title {
+        font-size: 2.25rem;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+        color: var(--text-color);
+      }
+      
+      .brand-subtitle {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #6b7280;
+        margin-top: 0.25rem;
+        font-weight: 600;
+      }
+      
+      .sidebar-content {
+        flex: 1;
+        overflow-y: auto;
+        margin-top: 3rem;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+      }
+      
+      .section-title {
+        font-style: italic;
+        font-size: 1.25rem;
+        color: var(--gold);
+        margin-bottom: 1rem;
+      }
+      
+      .detail-text {
+        font-size: 0.875rem;
+        color: #4b5563;
+        line-height: 1.625;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 1rem;
+        background: transparent;
+      }
+      
+      .detail-item {
+        display: flex;
+        align-items: flex-start;
+        font-size: 0.875rem;
+        color: #4b5563;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 0.75rem;
+        margin-bottom: 1rem;
+      }
+      
+      .detail-item svg {
+        margin-top: 0.125rem;
+        margin-right: 0.5rem;
+        color: var(--accent);
+        flex-shrink: 0;
+      }
+      
+      .detail-item.bold-accent {
+        color: var(--accent);
+        font-weight: 700;
+      }
+      
+      .delivery-box {
+        background-color: #F2EFE9;
+        padding: 1.25rem;
+        border-radius: 1rem;
+      }
+      
+      .delivery-title {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--accent);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+      
+      .delivery-desc {
+        font-size: 1.125rem;
+        font-style: italic;
+        line-height: 1.25;
+        color: var(--text-color);
+      }
+      
+      .delivery-sub {
+        font-size: 0.6875rem;
+        color: #4b5563;
+        margin-top: 0.5rem;
+      }
+      
+      /* Main Chat */
+      .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background-color: rgba(255,255,255,0.4);
+        position: relative;
+      }
+      
+      .header {
+        height: 5rem;
+        padding: 0 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: rgba(255,255,255,0.8);
+        backdrop-filter: blur(4px);
+        border-bottom: 1px solid var(--border-color);
+        z-index: 10;
+        flex-shrink: 0;
+      }
+      
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+      
+      .avatar {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        background-color: var(--accent);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+      }
+      
+      .concierge-title {
+        font-weight: 700;
+        font-size: 0.875rem;
+      }
+      
+      .status-text {
+        font-size: 0.625rem;
+        color: #16a34a;
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+      
+      .status-dot {
+        width: 6px;
+        height: 6px;
+        background-color: #22c55e;
+        border-radius: 50%;
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+      
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: .5; }
+      }
+      
+      .header-right {
+        text-align: right;
+      }
+      
+      @media (max-width: 640px) {
+        .header-right { display: none; }
+      }
+      
+      .header-rt {
+        font-size: 0.625rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: -0.05em;
+        color: var(--text-color);
+      }
+      
+      .header-rs {
+        font-size: 0.75rem;
+        color: #6b7280;
+      }
+      
+      .chat-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+      
+      .message {
+        display: flex;
+        width: 100%;
+      }
+      
+      .message.user {
+        justify-content: flex-end;
+      }
+      
+      .message.model {
+        justify-content: flex-start;
+      }
+      
+      .bubble {
+        padding: 1.25rem;
+        max-width: 70%;
+        box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+        font-size: 0.875rem;
+        line-height: 1.625;
+        white-space: pre-wrap;
+      }
+      
+      @media (max-width: 768px) {
+        .bubble { max-width: 85%; }
+      }
+      
+      .message.user .bubble {
+        background-color: var(--accent);
+        color: white;
+        border-radius: 12px 12px 2px 12px;
+      }
+      
+      .message.model .bubble {
+        background-color: white;
+        border: 1px solid var(--border-color);
+        color: var(--text-color);
+        border-radius: 12px 12px 12px 2px;
+      }
+      
+      .bubble-author {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.5;
+        margin-bottom: 0.5rem;
+      }
+      
+      .message.user .bubble-author {
+        font-family: 'Playfair Display', serif;
+        font-style: italic;
+        opacity: 0.7;
+        text-transform: none;
+        letter-spacing: normal;
+        color: white;
+      }
+      
+      .bubble-content {
+        line-height: 1.625;
+      }
+
+      .bubble-time {
+        font-size: 0.625rem;
+        text-align: right;
+        margin-top: 0.5rem;
+      }
+      
+      .message.user .bubble-time {
+        color: rgba(255,255,255,0.6);
+      }
+      
+      .message.model .bubble-time {
+        color: #9ca3af;
+      }
+      
+      /* Typing indicator */
+      .typing-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        height: 1rem;
+      }
+      
+      .dot {
+        width: 6px;
+        height: 6px;
+        background-color: #9ca3af;
+        border-radius: 50%;
+        animation: bounce 1.4s infinite ease-in-out both;
+      }
+      
+      .dot:nth-child(1) { animation-delay: -0.32s; }
+      .dot:nth-child(2) { animation-delay: -0.16s; }
+      
+      @keyframes bounce {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1); }
+      }
+      
+      .footer {
+        padding: 1.5rem;
+        background-color: white;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        align-items: flex-end;
+        gap: 1rem;
+        z-index: 10;
+        flex-shrink: 0;
+      }
+      
+      .input-wrapper {
+        flex: 1;
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 1.5rem;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+      }
+      
+      textarea {
+        width: 100%;
+        background: transparent;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        resize: none;
+        font-family: inherit;
+        font-size: 0.875rem;
+        color: var(--text-color);
+        outline: none;
+        min-height: 48px;
+        max-height: 120px;
+        overflow-y: hidden;
+      }
+      
+      textarea::placeholder {
+        color: #9ca3af;
+      }
+      
+      .send-btn {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        background-color: var(--accent);
+        color: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        transition: background-color 0.15s, transform 0.15s;
+        flex-shrink: 0;
+      }
+      
+      .send-btn:hover {
+        background-color: #3d4d40;
+      }
+      
+      .send-btn:active {
+        transform: scale(0.95);
+      }
+      
+      .send-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      
+      .send-btn svg {
+        width: 1.125rem;
+        height: 1.125rem;
+        margin-left: -2px;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/main.tsx"></script>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div>
+        <h1 class="brand-title serif">Ambrosia</h1>
+        <p class="brand-subtitle">Cafe & Bakery</p>
+      </div>
+      
+      <div class="sidebar-content">
+        <div>
+          <h3 class="section-title serif">About Us</h3>
+          <p class="detail-text">We serve freshly baked cakes, pastries, croissants, and premium coffee. Place your order here for pickup or delivery!</p>
+        </div>
+        
+        <div>
+          <h3 class="section-title serif">Details</h3>
+          <div class="detail-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>14/3 Mall Road, Civil Lines, Kanpur, UP 208001</span>
+          </div>
+          <div class="detail-item bold-accent">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <span>Mon-Sat 8AM - 9:30PM<br/>Sun 9AM - 8PM</span>
+          </div>
+        </div>
+        
+        <div class="delivery-box">
+          <div class="delivery-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            <span>Delivery Available</span>
+          </div>
+          <p class="delivery-desc serif">Free delivery on orders above ₹300</p>
+          <p class="delivery-sub">in select areas</p>
+        </div>
+      </div>
+    </aside>
+    
+    <!-- Main content -->
+    <main class="main-content">
+      <header class="header">
+        <div class="header-left">
+          <div class="avatar">A</div>
+          <div>
+            <div class="concierge-title">Digital Concierge</div>
+            <div class="status-text">
+              <span class="status-dot"></span>
+              <span>Online | Quick responses</span>
+            </div>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="header-rt">Delivery Status</div>
+          <div class="header-rs">Active in Civil Lines</div>
+        </div>
+      </header>
+      
+      <div class="chat-container" id="chat-container"></div>
+      
+      <footer class="footer">
+        <div class="input-wrapper">
+          <textarea id="chat-input" placeholder="Type your order details here..." rows="1"></textarea>
+        </div>
+        <button class="send-btn" id="send-btn" disabled>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+        </button>
+      </footer>
+    </main>
+    
+    <script>
+      let messages = [
+        {
+          id: 1,
+          role: 'model',
+          content: "Hi! Welcome to Ambrosia Cafe & Bakery 🙏 How can I help you today?",
+          timestamp: new Date()
+        }
+      ];
+      
+      let isTyping = false;
+      const chatContainer = document.getElementById('chat-container');
+      const inputField = document.getElementById('chat-input');
+      const sendBtn = document.getElementById('send-btn');
+      
+      function formatMarkdown(text) {
+        if (!text) return '';
+        return text
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g, '<em>$1</em>')
+          .replace(/\n\n/g, '<br><br>')
+          .replace(/\n/g, '<br>');
+      }
+      
+      function formatTime(date) {
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+      
+      function renderMessages() {
+        chatContainer.innerHTML = '';
+        messages.forEach(msg => {
+          const wrapper = document.createElement('div');
+          wrapper.className = `message ${msg.role}`;
+          
+          const authorStr = msg.role === 'model' ? 'Ambrosia Assistant' : 'Customer';
+          const timeStr = formatTime(msg.timestamp);
+          
+          wrapper.innerHTML = `
+            <div class="bubble">
+              <div class="bubble-author">${authorStr}</div>
+              <div class="bubble-content">${formatMarkdown(msg.content)}</div>
+              <div class="bubble-time">${timeStr}</div>
+            </div>
+          `;
+          chatContainer.appendChild(wrapper);
+        });
+        
+        if (isTyping) {
+          const typingWrapper = document.createElement('div');
+          typingWrapper.className = 'message model';
+          typingWrapper.innerHTML = `
+            <div class="bubble">
+              <div class="bubble-author">Ambrosia Assistant</div>
+              <div class="typing-indicator">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+              </div>
+            </div>
+          `;
+          chatContainer.appendChild(typingWrapper);
+        }
+        
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+      
+      async function handleSend() {
+        const text = inputField.value.trim();
+        if (!text || isTyping) return;
+        
+        inputField.value = '';
+        inputField.style.height = '48px';
+        sendBtn.disabled = true;
+        
+        const newUserMsg = { id: Date.now(), role: 'user', content: text, timestamp: new Date() };
+        messages.push(newUserMsg);
+        isTyping = true;
+        renderMessages();
+        
+        try {
+          const history = messages
+            .filter((msg, index) => !(index === 0 && msg.role === 'model') && msg !== newUserMsg)
+            .map(msg => ({
+              role: msg.role === 'model' ? 'model' : 'user',
+              parts: [{ text: msg.content }]
+            }));
+            
+          const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text, history })
+          });
+          
+          const data = await res.json();
+          
+          if (!res.ok) throw new Error(data.error || 'Failed to fetch response');
+          
+          messages.push({
+            id: Date.now() + 1,
+            role: 'model',
+            content: data.text,
+            timestamp: new Date()
+          });
+        } catch (error) {
+          console.error(error);
+          messages.push({
+            id: Date.now() + 1,
+            role: 'model',
+            content: "I'm sorry, I'm having trouble connecting to our system right now. Please try again or call the bakery directly.",
+            timestamp: new Date()
+          });
+        } finally {
+          isTyping = false;
+          renderMessages();
+        }
+      }
+      
+      sendBtn.addEventListener('click', handleSend);
+      
+      inputField.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          handleSend();
+        }
+      });
+      
+      inputField.addEventListener('input', () => {
+        inputField.style.height = '48px';
+        inputField.style.height = Math.min(inputField.scrollHeight, 120) + 'px';
+        sendBtn.disabled = !inputField.value.trim();
+      });
+      
+      // Initial render
+      renderMessages();
+    </script>
   </body>
 </html>
 
