@@ -1,0 +1,6 @@
+{
+  "name": "Ambrosia Chatbot",
+  "description": "An AI customer support assistant for Ambrosia Cafe & Bakery.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
